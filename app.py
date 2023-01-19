@@ -3,28 +3,32 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.uix.popup import Popup
-from kivy.uix.textinput import TextInput
 from kivy.uix.filechooser import FileChooserListView
-from PyPDF2 import PdfFileReader
+from bs4 import BeautifulSoup
 
-class PDFReaderApp(App):
+class HTMLReaderApp(App):
 
     def build(self):
         layout = GridLayout(cols=1)
         self.filechooser = FileChooserListView()
-        self.filechooser.path = '/path/to/pdf/folder'
+        self.filechooser.path = 'content'
         layout.add_widget(self.filechooser)
-        layout.add_widget(Button(text='Open PDF', on_press=self.open_pdf))
+        layout.add_widget(Button(text='Open HTML', on_press=self.open_html))
+        layout.add_widget(Button(text='Exit', on_press=self.stop))
         return layout
 
-    def open_pdf(self, instance):
+    def open_html(self, instance):
         if not self.filechooser.selection:
             return
-        pdf_file = self.filechooser.selection[0]
-        pdf = PdfFileReader(open(pdf_file, 'rb'))
-        pdf_text = pdf.getPage(0).extractText()
-        popup = Popup(title='PDF Text', content=Label(text=pdf_text), size_hint=(0.8, 0.8))
+        html_file = self.filechooser.selection[0]
+        with open(html_file, "r") as file:
+            soup = BeautifulSoup(file, 'html.parser')
+            html_text = soup.get_text()
+        popup = Popup(title='HTML Text', content=Label(text=html_text), size_hint=(0.8, 0.8))
         popup.open()
 
+    def stop(self, instance):
+        App.get_running_app().stop()
+
 if __name__ == '__main__':
-    PDFReaderApp().run()
+    HTMLReaderApp().run()
